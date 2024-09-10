@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HPGML", "HPGML.vcxproj", "{6ED62BD7-09AC-4707-9569-63C1EF00453C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6ED62BD7-09AC-4707-9569-63C1EF00453C}.Debug|x64.ActiveCfg = Debug|x64
+		{6ED62BD7-09AC-4707-9569-63C1EF00453C}.Debug|x64.Build.0 = Debug|x64
+		{6ED62BD7-09AC-4707-9569-63C1EF00453C}.Release|x64.ActiveCfg = Release|x64
+		{6ED62BD7-09AC-4707-9569-63C1EF00453C}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B06021C3-1908-47FE-BAF6-C861BB313A0A}
+	EndGlobalSection
+EndGlobal
