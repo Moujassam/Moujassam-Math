@@ -3,7 +3,7 @@
 #include "HPGML.h"
 #include <chrono>
 
-#define N 100000000
+#define N 1000
 
 int main()
 {
@@ -14,7 +14,7 @@ int main()
 	std::vector<float> result;
 	result.resize(N);
 
-	queue q(gpu_selector_v);
+	queue q(cpu_selector_v);
 
 	HPGML_vector2 vec(q, scalar.data(), N);
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();

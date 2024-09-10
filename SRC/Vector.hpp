@@ -1,5 +1,4 @@
 #pragma once
-#include <cmath>
 #include <math.h>
 
 class Vector2
@@ -51,6 +50,7 @@ public:
     {
         return (&x)[i];
     }
+    
     float x, y;
 };
 
@@ -107,8 +107,8 @@ class Vector3
     }
 	Vector3 Cross(const Vector3& v) const
 	{
-		return Vector3(y * v.z - z * v.y, 
-                        z * v.x - x * v.z, 
+		return Vector3(y * v.z - z * v.y,
+                        z * v.x - x * v.z,
                         x * v.y - y * v.x);
 	}
     Vector3 Project(const Vector3& v) const
