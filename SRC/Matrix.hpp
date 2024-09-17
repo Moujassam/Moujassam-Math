@@ -2,9 +2,11 @@
 
 #include <cstring>
 #include "Vector.hpp"
+#include <sycl/sycl.hpp>
 
 #define toRadians(x) x * 0.01745329251f
-						 
+
+
 class Matrix4x4
 {
 public:
@@ -13,7 +15,25 @@ public:
 		for (int i = 0; i < 4 * 4; i++)
 			m[i] = 0.0f;
 	}
+	~Matrix4x4(){}
 
+	Matrix4x4(Matrix4x4 &other)
+	{
+		for(int i = 0; i < 4*4; i++)
+			m[i] = other.m[i];
+	}
+	Matrix4x4(const Matrix4x4 &other)
+	{
+		for(int i = 0; i < 4*4; i++)
+			m[i] = other.m[i];
+	}
+	Matrix4x4 &operator=(Matrix4x4 &other)
+	{
+		for(int i = 0; i < 4*4; i++)
+			m[i] = other.m[i];
+		return *this;
+	}
+	
 	Matrix4x4(const Vector3 &forward, const Vector3 &up, const Vector3 &right, const Vector3 &translate)
 	{
 		m[0 + 0 * 4] = forward.x;
@@ -53,7 +73,7 @@ public:
 			m[i] = elements[i];
 	}
 
-	static Matrix4x4 LookAt(const Vector3& camera, const Vector3& object, const Vector3& up)
+	static const Matrix4x4 LookAt(const Vector3& camera, const Vector3& object, const Vector3& up)
 	{
 		Vector3 forward = (object - camera).Normalize();
 		Vector3 right = up.Cross(forward).Normalize();
@@ -62,7 +82,7 @@ public:
 		return Matrix4x4(forward, newUp, right, camera);
 	}
 
-	static Matrix4x4 Orthographic(float left, float right, float bottom, float top, float near, float far)
+	static const Matrix4x4 Orthographic(const float left, const float right, const float bottom, const float top, const float near, const float far)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -77,7 +97,7 @@ public:
 		return result;
 	}
 
-	static Matrix4x4 Perspective(float fov, float aspectRatio, float near, float far)
+	static const Matrix4x4 Perspective(const float fov, const float aspectRatio, const float near, const float far)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -96,7 +116,7 @@ public:
 		return result;
 	}
 
-	static Matrix4x4 Translation(const Vector3& translation)
+	static const Matrix4x4 Translation(const Vector3& translation)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -107,7 +127,7 @@ public:
 		return result;
 	}
 
-	static Matrix4x4 Rotation(float angle, const Vector3& axis)
+	static const Matrix4x4 Rotation(const float angle, const Vector3& axis)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -135,7 +155,7 @@ public:
 		return result;
 	}
 
-	static Matrix4x4 Scale(const Vector3& scale)
+	static const Matrix4x4 Scale(const Vector3& scale)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -148,14 +168,14 @@ public:
 
 	
 
-	static Matrix4x4 Identity()
+	static const Matrix4x4 Identity()
 	{
 		return Matrix4x4(1.0f);
 	}
 
-	Matrix4x4& Multiply(const Matrix4x4& other)
+	friend const Matrix4x4 operator*(const Matrix4x4& left, const Matrix4x4& other)
 	{
-		float data[16] = { 0 };
+		Matrix4x4 data;
 		for (int y = 0; y < 4; y++)
 		{
 			for (int x = 0; x < 4; x++)
@@ -163,31 +183,34 @@ public:
 				float sum = 0.0f;
 				for (int e = 0; e < 4; e++)
 				{
-					sum += m[x + e * 4] * other.m[e + y * 4];
+					sum += left.m[x + e * 4] * other.m[e + y * 4];
 				}
-				data[x + y * 4] = sum;
+				data.m[x + y * 4] = sum;
 			}
 		}
-		memcpy(m, data, 4 * 4 * sizeof(float));
-		return *this;
+		return data;
 	}
 
-	friend Matrix4x4 operator*(Matrix4x4 left, const Matrix4x4& right)
+	const Vector3 TransformDirection(const Vector3 &v) const
 	{
-		return left.Multiply(right);
+		return Vector3(
+			m[0 + 0 * 4] * v.x + m[0 + 1 * 4] * v.y + m[0 + 2 * 4] * v.z,
+			m[1 + 0 * 4] * v.x + m[1 + 1 * 4] * v.y + m[1 + 2 * 4] * v.z,
+			m[2 + 0 * 4] * v.x + m[2 + 1 * 4] * v.y + m[2 + 2 * 4] * v.z
+		);
 	}
 
-	Matrix4x4& operator*=(const Matrix4x4& other)
+	const Matrix4x4 operator*=(const Matrix4x4& other) const
 	{
-		return Multiply(other);
+		return (*this)*(other);
 	}
-	Matrix4x4& operator=(const Matrix4x4& other)
+	const Matrix4x4& operator=(const Matrix4x4& other)
 	{
 		memcpy(m, other.m, 4 * 4 * sizeof(float));
 		return *this;
 	}
 
-	Vector3 Multiply(const Vector3& other) const
+	const Vector3 Multiply(const Vector3& other) const
 	{
 		return Vector3(
 			m[0 + 0 * 4] * other.x + m[0 + 1 * 4] * other.y + m[0 + 2 * 4] * other.z + m[0 + 3 * 4],
@@ -196,12 +219,12 @@ public:
 		);
 	}
 
-	friend Vector3 operator*(const Matrix4x4& left, const Vector3& right)
+	friend const Vector3 operator*(const Matrix4x4& left, const Vector3& right)
 	{
 		return left.Multiply(right);
 	}
 
-	Matrix4x4 ScaleInverse() const
+	const Matrix4x4 ScaleInverse() const
 	{
 		Matrix4x4 result(1.0f);
 
@@ -212,7 +235,7 @@ public:
 		return result;
 	}
 
-	Matrix4x4 Transpose() const
+	const Matrix4x4 Transpose() const
 	{
 		Matrix4x4 result(1.0f);
 
@@ -226,7 +249,7 @@ public:
 		return result;
 	}
 
-	Matrix4x4 RotationInverse() const
+	const Matrix4x4 RotationInverse() const
 	{
 		Matrix4x4 result(1.0f);
 
@@ -245,7 +268,7 @@ public:
 		return result;
 	}
 
-	Matrix4x4 TranslateInverse() const
+	const Matrix4x4 TranslateInverse() const
 	{
 		Matrix4x4 result(1.0f);
 
@@ -256,10 +279,13 @@ public:
 		return result;
 	}
 
-	Matrix4x4 TRInverse() const
+	const Matrix4x4 TRInverse() const
 	{
 		return TranslateInverse() * RotationInverse();
 	}
 	
 	float m[4 * 4];
 };
+
+template<>
+struct sycl::is_device_copyable<Matrix4x4> : std::true_type {};

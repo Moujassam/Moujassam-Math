@@ -15,12 +15,12 @@ public:
 		min = Min;
 		max = Max;
 	}
-	AABB operator+(const Vector3& v) const
+	const AABB operator+(const Vector3& v) const
 	{
 		return AABB(min + v, max + v);
 	}
 
-	bool LineAABBIntersection(const Vector3& start, const Vector3& end, Vector3& intersectionPoint, float &fraction)
+	const bool LineAABBIntersection(const Vector3& start, const Vector3& end, Vector3& intersectionPoint, float &fraction) const
 	{
 		float f_low = 0.0f;
 		float f_high = 1.0f;
@@ -38,7 +38,7 @@ public:
 		fraction = f_low;
 		return true;
 	}
-	bool ClipLine(const int& d, const AABB& aabb, const Vector3& start, const Vector3& end, float& f_low, float& f_high)
+	const bool ClipLine(const int& d, const AABB& aabb, const Vector3& start, const Vector3& end, float& f_low, float& f_high) const
 	{
 		float f_dim_low = (aabb.min[d] - start[d]) / (end[d] - start[d]);
 		float f_dim_high = (aabb.max[d] - start[d]) / (end[d] - start[d]);
@@ -61,6 +61,19 @@ public:
 		
 		return true;
 	}
+
+	const bool AABBIntersection(const AABB &other) const
+	{
+		for(char i = 0; i < 3; i++)
+		{
+			if(min[i] > other.max[i])
+				return false;
+			if(max[i] < other.min[i])
+				return false;
+		}
+		return true;
+	}
+
 	Vector3 min;
 	Vector3 max;
 };
