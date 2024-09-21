@@ -72,11 +72,15 @@ class Vector3
 	{
 		xyz = xyz_init;
 	}
+	Vector3(float4 xyz_init)
+	{
+		xyz = float3(xyz_init.swizzle<0, 1, 2>());
+	}
     Vector3(float X, float Y, float Z)
     {
-        xyz.x() = X;
-        xyz.y() = Y;
-        xyz.z() = Z;
+        xyz[0] = X;
+        xyz[1] = Y;
+        xyz[2] = Z;
     }
     const float Length() const
     {
@@ -125,12 +129,19 @@ class Vector3
     {
 		return v * (DotProduct(v) / v.LengthSqrt());
     }
-    const float operator[](const int i) const
+    const float &operator[](const int i) const
     {
         return (xyz)[i];
     }
+	const float &x() const {return xyz.x();}
+	const float &y() const {return xyz.y();}
+	const float &z() const {return xyz.z();}
+
     float3 xyz;
 };
+
+template<>
+struct sycl::is_device_copyable<Vector3> : std::true_type {};
 
 class Vector4
 {

@@ -12,65 +12,71 @@ class Matrix4x4
 public:
 	Matrix4x4()
 	{
-		for (int i = 0; i < 4 * 4; i++)
-			m[i] = 0.0f;
+		for (int i = 0; i < 4; i++)
+			m[i] = float4(0.0f);
 	}
 	~Matrix4x4(){}
 
 	Matrix4x4(Matrix4x4 &other)
 	{
-		for(int i = 0; i < 4*4; i++)
+		for(int i = 0; i < 4; i++)
 			m[i] = other.m[i];
 	}
 	Matrix4x4(const Matrix4x4 &other)
 	{
-		for(int i = 0; i < 4*4; i++)
+		for(int i = 0; i < 4; i++)
 			m[i] = other.m[i];
 	}
-	Matrix4x4 &operator=(Matrix4x4 &other)
+	const Matrix4x4 &operator=(Matrix4x4 &other)
 	{
-		for(int i = 0; i < 4*4; i++)
+		for(int i = 0; i < 4; i++)
+			m[i] = other.m[i];
+		return *this;
+	}
+	const Matrix4x4 &operator=(const Matrix4x4 &other)
+	{
+		for(int i = 0; i < 4; i++)
 			m[i] = other.m[i];
 		return *this;
 	}
 	
 	Matrix4x4(const Vector3 &forward, const Vector3 &up, const Vector3 &right, const Vector3 &translate)
 	{
-		m[0 + 0 * 4] = forward.x;
-		m[0 + 1 * 4] = forward.y;
-		m[0 + 2 * 4] = forward.z;
-		m[0 + 3 * 4] = 0.0f;
+		m[0][0] = forward.x();
+		m[0][1] = forward.y();
+		m[0][2] = forward.z();
+		m[0][3] = 0.0f;
 
-		m[1 + 0 * 4] = up.x;
-		m[1 + 1 * 4] = up.y;
-		m[1 + 2 * 4] = up.z;
-		m[1 + 3 * 4] = 0.0f;
+		m[1][0] = up.x();
+		m[1][1] = up.y();
+		m[1][2] = up.z();
+		m[1][3] = 0.0f;
 
-		m[2 + 0 * 4] = right.x;
-		m[2 + 1 * 4] = right.y;
-		m[2 + 2 * 4] = right.z;
-		m[2 + 3 * 4] = 0.0f;
+		m[2][0] = right.x();
+		m[2][1] = right.y();
+		m[2][2] = right.z();
+		m[2][3] = 0.0f;
 
-		m[0 + 3 * 4] = translate.x;
-		m[1 + 3 * 4] = translate.y;
-		m[2 + 3 * 4] = translate.z;
-		m[3 + 3 * 4] = 1.0f;
+		m[0][3] = translate.x();
+		m[1][3] = translate.y();
+		m[2][3] = translate.z();
+		m[3][3] = 1.0f;
 	}
 	Matrix4x4(float diagonal)
 	{
-		for (int i = 0; i < 4 * 4; i++)
-			m[i] = 0.0f;
+		for (int i = 0; i < 4; i++)
+			m[i] = float4(0.0f);
 
-		m[0 + 0 * 4] = diagonal;
-		m[1 + 1 * 4] = diagonal;
-		m[2 + 2 * 4] = diagonal;
-		m[3 + 3 * 4] = diagonal;
+		m[0][0] = diagonal;
+		m[1][1] = diagonal;
+		m[2][2] = diagonal;
+		m[3][3] = diagonal;
 	}
 
 	Matrix4x4(float* elements)
 	{
-		for (int i = 0; i < 4 * 4; i++)
-			m[i] = elements[i];
+		for (int i = 0; i < 4; i++)
+			m[i] = float4(elements[0 + i * 4], elements[1 + i * 4], elements[2 + i * 4], elements[3 + i * 4]);
 	}
 
 	static const Matrix4x4 LookAt(const Vector3& camera, const Vector3& object, const Vector3& up)
@@ -86,13 +92,13 @@ public:
 	{
 		Matrix4x4 result(1.0f);
 
-		result.m[0 + 0 * 4] = 2.0f / (right - left);
-		result.m[1 + 1 * 4] = 2.0f / (top - bottom);
-		result.m[2 + 2 * 4] = 2.0f / (near - far);
+		result.m[0][0] = 2.0f / (right - left);
+		result.m[1][1] = 2.0f / (top - bottom);
+		result.m[2][2] = 2.0f / (near - far);
 
-		result.m[0 + 3 * 4] = (left + right) / (left - right);
-		result.m[1 + 3 * 4] = (bottom + top) / (bottom - top);
-		result.m[2 + 3 * 4] = (far + near) / (far - near);
+		result.m[0][3] = (left + right) / (left - right);
+		result.m[1][3] = (bottom + top) / (bottom - top);
+		result.m[2][3] = (far + near) / (far - near);
 
 		return result;
 	}
@@ -107,11 +113,11 @@ public:
 		float b = (near + far) / (near - far);
 		float c = (2.0f * near * far) / (near - far);
 
-		result.m[0 + 0 * 4] = a;
-		result.m[1 + 1 * 4] = q;
-		result.m[2 + 2 * 4] = b;
-		result.m[3 + 2 * 4] = -1.0f;
-		result.m[2 + 3 * 4] = c;
+		result.m[0][0] = a;
+		result.m[1][1] = q;
+		result.m[2][2] = b;
+		result.m[3][2] = -1.0f;
+		result.m[2][3] = c;
 
 		return result;
 	}
@@ -120,9 +126,9 @@ public:
 	{
 		Matrix4x4 result(1.0f);
 
-		result.m[0 + 3 * 4] = translation.x;
-		result.m[1 + 3 * 4] = translation.y;
-		result.m[2 + 3 * 4] = translation.z;
+		result.m[0][3] = translation.x();
+		result.m[1][3] = translation.y();
+		result.m[2][3] = translation.z();
 
 		return result;
 	}
@@ -136,21 +142,21 @@ public:
 		float s = sin(r);
 		float omc = 1.0f - c;
 
-		float x = axis.x;
-		float y = axis.y;
-		float z = axis.z;
+		float x = axis.x();
+		float y = axis.y();
+		float z = axis.z();
 
-		result.m[0 + 0 * 4] = x * omc + c;
-		result.m[1 + 0 * 4] = y * x * omc + z * s;
-		result.m[2 + 0 * 4] = x * z * omc - y * s;
+		result.m[0][0] = x * omc + c;
+		result.m[1][0] = y * x * omc + z * s;
+		result.m[2][0] = x * z * omc - y * s;
 
-		result.m[0 + 1 * 4] = x * y * omc - z * s;
-		result.m[1 + 1 * 4] = y * omc + c;
-		result.m[2 + 1 * 4] = y * z * omc + x * s;
+		result.m[0][1] = x * y * omc - z * s;
+		result.m[1][1] = y * omc + c;
+		result.m[2][1] = y * z * omc + x * s;
 
-		result.m[0 + 2 * 4] = x * z * omc + y * s;
-		result.m[1 + 2 * 4] = y * z * omc - x * s;
-		result.m[2 + 2 * 4] = z * omc + c;
+		result.m[0][2] = x * z * omc + y * s;
+		result.m[1][2] = y * z * omc - x * s;
+		result.m[2][2] = z * omc + c;
 
 		return result;
 	}
@@ -159,9 +165,9 @@ public:
 	{
 		Matrix4x4 result(1.0f);
 
-		result.m[0 + 0 * 4] = scale.x;
-		result.m[1 + 1 * 4] = scale.y;
-		result.m[2 + 2 * 4] = scale.z;
+		result.m[0][0] = scale.x();
+		result.m[1][1] = scale.y();
+		result.m[2][2] = scale.z();
 
 		return result;
 	}
@@ -183,7 +189,7 @@ public:
 				float sum = 0.0f;
 				for (int e = 0; e < 4; e++)
 				{
-					sum += left.m[x + e * 4] * other.m[e + y * 4];
+					sum += left.m[x][e] * other.m[e][y];
 				}
 				data.m[x + y * 4] = sum;
 			}
@@ -193,30 +199,29 @@ public:
 
 	const Vector3 TransformDirection(const Vector3 &v) const
 	{
-		return Vector3(
-			m[0 + 0 * 4] * v.x + m[0 + 1 * 4] * v.y + m[0 + 2 * 4] * v.z,
-			m[1 + 0 * 4] * v.x + m[1 + 1 * 4] * v.y + m[1 + 2 * 4] * v.z,
-			m[2 + 0 * 4] * v.x + m[2 + 1 * 4] * v.y + m[2 + 2 * 4] * v.z
-		);
+		float4 vec(v.xyz, 0);
+		return Vector3(dot(m[0], vec), dot(m[1], vec), dot(m[2], vec));
+		// return Vector3(
+		// 	m[0 + 0 * 4] * v.x() + m[0 + 1 * 4] * v.y() + m[0 + 2 * 4] * v.z(),
+		// 	m[1 + 0 * 4] * v.x() + m[1 + 1 * 4] * v.y() + m[1 + 2 * 4] * v.z(),
+		// 	m[2 + 0 * 4] * v.x() + m[2 + 1 * 4] * v.y() + m[2 + 2 * 4] * v.z()
+		// );
 	}
 
 	const Matrix4x4 operator*=(const Matrix4x4& other) const
 	{
 		return (*this)*(other);
 	}
-	const Matrix4x4& operator=(const Matrix4x4& other)
-	{
-		memcpy(m, other.m, 4 * 4 * sizeof(float));
-		return *this;
-	}
 
 	const Vector3 Multiply(const Vector3& other) const
 	{
-		return Vector3(
-			m[0 + 0 * 4] * other.x + m[0 + 1 * 4] * other.y + m[0 + 2 * 4] * other.z + m[0 + 3 * 4],
-			m[1 + 0 * 4] * other.x + m[1 + 1 * 4] * other.y + m[1 + 2 * 4] * other.z + m[1 + 3 * 4],
-			m[2 + 0 * 4] * other.x + m[2 + 1 * 4] * other.y + m[2 + 2 * 4] * other.z + m[2 + 3 * 4]
-		);
+		float4 vec(other.xyz, 1);
+		return Vector3(dot(m[0], vec), dot(m[1], vec), dot(m[2], vec));
+		// return Vector3(
+		// 	m[0 + 0 * 4] * other.x() + m[0 + 1 * 4] * other.y() + m[0 + 2 * 4] * other.z() + m[0 + 3 * 4],
+		// 	m[1 + 0 * 4] * other.x() + m[1 + 1 * 4] * other.y() + m[1 + 2 * 4] * other.z() + m[1 + 3 * 4],
+		// 	m[2 + 0 * 4] * other.x() + m[2 + 1 * 4] * other.y() + m[2 + 2 * 4] * other.z() + m[2 + 3 * 4]
+		// );
 	}
 
 	friend const Vector3 operator*(const Matrix4x4& left, const Vector3& right)
@@ -228,9 +233,9 @@ public:
 	{
 		Matrix4x4 result(1.0f);
 
-		result.m[0 + 0 * 4] = 1.0f / m[0 + 0 * 4];
-		result.m[1 + 1 * 4] = 1.0f / m[1 + 1 * 4];
-		result.m[2 + 2 * 4] = 1.0f / m[2 + 2 * 4];
+		result.m[0][0] = 1.0f / m[0][0];
+		result.m[1][1] = 1.0f / m[1][1];
+		result.m[2][2] = 1.0f / m[2][2];
 
 		return result;
 	}
@@ -243,7 +248,7 @@ public:
 		{
 			for (int x = 0; x < 4; x++)
 			{
-				result.m[x + y * 4] = m[y + x * 4];
+				result.m[x][y] = m[y][x];
 			}
 		}
 		return result;
@@ -253,17 +258,17 @@ public:
 	{
 		Matrix4x4 result(1.0f);
 
-		result.m[0 + 0 * 4] = m[0 + 0 * 4];
-		result.m[1 + 0 * 4] = m[0 + 1 * 4];
-		result.m[2 + 0 * 4] = m[0 + 2 * 4];
+		result.m[0][0] = m[0][0];
+		result.m[1][0] = m[0][1];
+		result.m[2][0] = m[0][2];
 
-		result.m[0 + 1 * 4] = m[1 + 0 * 4];
-		result.m[1 + 1 * 4] = m[1 + 1 * 4];
-		result.m[2 + 1 * 4] = m[1 + 2 * 4];
+		result.m[0][1] = m[1][0];
+		result.m[1][1] = m[1][1];
+		result.m[2][1] = m[1][2];
 
-		result.m[0 + 2 * 4] = m[2 + 0 * 4];
-		result.m[1 + 2 * 4] = m[2 + 1 * 4];
-		result.m[2 + 2 * 4] = m[2 + 2 * 4];
+		result.m[0][2] = m[2][0];
+		result.m[1][2] = m[2][1];
+		result.m[2][2] = m[2][2];
 
 		return result;
 	}
@@ -272,9 +277,9 @@ public:
 	{
 		Matrix4x4 result(1.0f);
 
-		result.m[0 + 3 * 4] = -m[0 + 3 * 4];
-		result.m[1 + 3 * 4] = -m[1 + 3 * 4];
-		result.m[2 + 3 * 4] = -m[2 + 3 * 4];
+		result.m[0][3] = -m[0][3];
+		result.m[1][3] = -m[1][3];
+		result.m[2][3] = -m[2][3];
 
 		return result;
 	}
@@ -284,7 +289,7 @@ public:
 		return TranslateInverse() * RotationInverse();
 	}
 	
-	float m[4 * 4];
+	float4 m[4];
 };
 
 template<>
