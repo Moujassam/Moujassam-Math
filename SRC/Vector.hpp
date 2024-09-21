@@ -2,42 +2,47 @@
 #include <math.h>
 #include <sycl/sycl.hpp>
 
+using namespace sycl;
+
 class Vector2
 {
 public:
 	Vector2()
 	{
-		x = 0;
-		y = 0;
+		xy = float2(0, 0);
+	}
+	Vector2(float2 xy_init)
+	{
+		xy = xy_init;
 	}
     Vector2(float X, float Y)
     {
-        x = X;
-        y = Y;
+        xy.x() = X;
+        xy.y() = Y;
     }
     const float Length() const
     {
-        return sqrt(x*x + y*y);
+        return sqrt(dot(xy, xy));//x*x + y*y);
     }
     const float LengthSqrt() const
     {
-        return x*x + y*y;
+        return dot(xy, xy);//x*x + y*y;
     }
     const Vector2 operator+(const Vector2 &s) const
     {
-        return Vector2(x+s.x, y+s.y);
+        return Vector2(xy + s.xy);//x+s.x, y+s.y);
     }
     const Vector2 operator-(const Vector2 &s) const
     {
-        return Vector2(x-s.x, y-s.y);
+        return Vector2(xy - s.xy);//x-s.x, y-s.y);
     }
     const Vector2 operator*(const float &s) const
     {
-        return Vector2(x*s, y*s);
+        return Vector2(xy * s);//x*s, y*s);
     }
     const Vector2 operator/(const float &s) const
     {
-        return Vector2(x/s, y/s);
+        return Vector2(xy / s);//x/s, y/s);
     }
     const Vector2 Normalize() const
     {
@@ -45,11 +50,12 @@ public:
     }
     const float DotProduct(const Vector2& b) const
     {
-        return x * b.x + y * b.y;
+		return dot(xy, b.xy);
+        // return x * b.x + y * b.y;
     }
     const float operator[](int i) const
     {
-        return (&x)[i];
+        return (xy)[i];
     }
     
     float2 xy;

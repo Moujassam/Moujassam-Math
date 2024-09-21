@@ -17,7 +17,7 @@ class EAngle
         r = roll;
     }
 
-    Vector3 ToVector3() const
+    const Vector3 ToVector3() const
     {
         return Vector3(std::cos(y) * std::cos(p),
             std::sin(p),
