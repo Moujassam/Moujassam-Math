@@ -11,10 +11,19 @@ using namespace sycl;
 int main()
 {
 
-	queue q(default_selector_v);
+	queue q(gpu_selector_v);
 	std::cout << q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() << "\n";
 	std::cout << q.get_device().get_info<ext::intel::info::device::gpu_eu_simd_width>() << "\n";
 	std::cout << q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>() << "\n";
+	std::cout << q.get_device().get_info<ext::intel::info::device::gpu_slices>() << "\n";
+	std::cout << q.get_device().get_info<ext::intel::info::device::gpu_subslices_per_slice>() << "\n";
+	std::cout << q.get_device().get_info<ext::intel::info::device::gpu_eu_count_per_subslice>() << "\n";
+	
+	queue q2(gpu_selector_v);
+	std::cout << q2.get_device().get_info<info::device::max_compute_units>() << "\n";
+	std::cout << q2.get_device().get_info<info::device::native_vector_width_double>() << "\n";
+	
+	
 	
 	Matrix4x4 *a = malloc_device<Matrix4x4>(N, q);
 	Matrix4x4 *b = malloc_device<Matrix4x4>(N, q);
