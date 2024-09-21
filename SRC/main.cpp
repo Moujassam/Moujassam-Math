@@ -11,7 +11,7 @@ using namespace sycl;
 int main()
 {
 
-	queue q(cpu_selector_v);
+	queue q(gpu_selector_v);
 	// std::cout << q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() << "\n";
 	// std::cout << q.get_device().get_info<ext::intel::info::device::gpu_eu_simd_width>() << "\n";
 	// std::cout << q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>() << "\n";
@@ -25,8 +25,8 @@ int main()
 	
 	
 	
-	Matrix4x4 *a = malloc_device<Matrix4x4>(N, q);
-	Matrix4x4 *b = malloc_device<Matrix4x4>(N, q);
+	// Matrix4x4 *a = malloc_device<Matrix4x4>(N, q);
+	// Matrix4x4 *b = malloc_device<Matrix4x4>(N, q);
 	// Matrix4x4 *c = malloc_device<Matrix4x4>(N, q);
 	Vector3 *c = malloc_device<Vector3>(N, q);
 
@@ -36,18 +36,21 @@ int main()
 	Vector3 dv(4, 4, 4);
 	
 	std::vector<event> e;
-	e.push_back(q.fill(a, Matrix4x4(av, bv, cv, dv), N));
-	e.push_back(q.fill(b, Matrix4x4(av, bv, cv, dv), N));
-	e.push_back(q.fill(c, Vector3(0, 0, 0), N));
-	// int jobs = q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
-	int jobs = 12;
-	q.wait();
+	// e.push_back(q.fill(a, Matrix4x4(av, bv, cv, dv), N));
+	// e.push_back(q.fill(b, Matrix4x4(av, bv, cv, dv), N));
+	// e.push_back(q.fill(c, Matrix4x4(1.0f), N));
+	
+	// e.push_back(q.fill(c, Vector3(0, 0, 0), N));
+	int jobs = q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
+	// int jobs = 12;
+	// q.wait();
+	Matrix4x4 test(av, bv, cv, dv);
 	q.submit([&](handler &h){
 		// h.depends_on(e);
 		h.parallel_for(jobs, [=](item<1> it){
 			for(unsigned long i = it[0]; i < N; i += it.get_range(0))
 			{
-				c[i] = a[i] * b[i] * b[i].Transpose() * a[i] * b[i] * a[i] * Vector3(float3(1.0f, 1.0f, 1.0f));
+				c[i] = test * Vector3(1.0f, 1.0f, 1.0f);
 			}
 		});
 	});
@@ -64,6 +67,7 @@ int main()
 	q.wait();
 
 	Vector3 v = (result[0]);
+	// Vector3 v = result[0] * Vector3(1.0f, 1.0f, 1.0f);
 	std::cout<< v.x() <<" "<< v.y() << " " << v.z() << "\n";
 
     return 0;

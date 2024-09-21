@@ -186,12 +186,18 @@ public:
 		{
 			for (int x = 0; x < 4; x++)
 			{
-				float sum = 0.0f;
-				for (int e = 0; e < 4; e++)
-				{
-					sum += left.m[x][e] * other.m[e][y];
-				}
-				data.m[x + y * 4] = sum;
+				float4 oth2 = float4(other.m[0][y], other.m[1][y], other.m[2][y], other.m[3][y]);
+				float sum = dot(left.m[x], oth2);
+				data.m[x][y] = sum;
+				
+				// float sum = 0.0f;
+
+				// for (int e = 0; e < 4; e++)
+				// {
+				// 	sum += left.m[x][e] * other.m[e][y];
+				// }
+				// data.m[x][y] = sum;
+
 			}
 		}
 		return data;
