@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector.hpp"
+#include <sycl/sycl.hpp>
 
 class AABB
 {
@@ -25,11 +26,7 @@ public:
 		float f_low = 0.0f;
 		float f_high = 1.0f;
 
-		if (ClipLine(0, *this, start, end, f_low, f_high) == false)
-			return false;
-		if (ClipLine(1, *this, start, end, f_low, f_high) == false)
-			return false;
-		if (ClipLine(2, *this, start, end, f_low, f_high) == false)
+		if (ClipLine(*this, start, end, f_low, f_high) == false)
 			return false;
 
 		Vector3 b = end - start;
@@ -38,37 +35,48 @@ public:
 		fraction = f_low;
 		return true;
 	}
-	const bool ClipLine(const int& d, const AABB& aabb, const Vector3& start, const Vector3& end, float& f_low, float& f_high) const
+	const bool ClipLine(const AABB& aabb, const Vector3& start, const Vector3& end, float& f_low, float& f_high) const
 	{
-		float f_dim_low = (aabb.min[d] - start[d]) / (end[d] - start[d]);
-		float f_dim_high = (aabb.max[d] - start[d]) / (end[d] - start[d]);
-
-		if (f_dim_high < f_dim_low)
+		float3 f_dim_low = (aabb.min.xyz - start.xyz) / (end.xyz - start.xyz);
+		float3 f_dim_high = (aabb.max.xyz - start.xyz) / (end.xyz - start.xyz);
+		
+		int3 comp = f_dim_high < f_dim_low;
+		for(int i = 0; i < 3; i++)
+			if (comp[i])
+			{
+				float temp = f_dim_high[i];
+				f_dim_high[i] = f_dim_low[i];
+				f_dim_low[i] = temp;
+			}
+		int3 first1 = f_dim_high < f_low;
+		int3 second1 = f_dim_low > f_high;
+		
+		int3 first2 = f_dim_low > f_low;
+		int3 second2 = f_dim_high < f_high;
+		for(int i = 0; i < 3; i++)
 		{
-			float temp = f_dim_high;
-			f_dim_high = f_dim_low;
-			f_dim_low = temp;
+			if (first1[i] || second1[i])
+				return false;
+
+			f_low = first2[i] * f_dim_low[i] + !first2[i] * f_low;
+			f_high = second2[i] * f_dim_high[i] + !second2[i] * f_high;
+
+			if (f_low > f_high)
+				return false;
 		}
-
-		if (f_dim_high < f_low || f_dim_low > f_high)
-			return false;
-
-		f_low = f_dim_low > f_low ? f_dim_low : f_low;
-		f_high = f_dim_high < f_high ? f_dim_high : f_high;
-
-		if (f_low > f_high)
-			return false;
 		
 		return true;
 	}
 
 	const bool AABBIntersection(const AABB &other) const
 	{
+		int3 first = min.xyz > other.max.xyz;
+		int3 second = max.xyz < other.min.xyz;
 		for(char i = 0; i < 3; i++)
 		{
-			if(min[i] > other.max[i])
+			if(first[i])
 				return false;
-			if(max[i] < other.min[i])
+			if(second[i])
 				return false;
 		}
 		return true;

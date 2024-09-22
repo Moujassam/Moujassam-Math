@@ -27,7 +27,7 @@ public:
 
     const Quaternion Inverted() const
     {
-        return Quaternion(w, Vector3(-v.x, -v.y, -v.z));
+        return Quaternion(w, -v);
     }
 
     const Quaternion operator*(const Quaternion &q) const
