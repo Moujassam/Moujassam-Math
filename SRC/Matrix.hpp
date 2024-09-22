@@ -12,27 +12,17 @@ class Matrix4x4
 public:
 	Matrix4x4()
 	{
-		for (int i = 0; i < 4; i++)
-			m[i] = float4(0.0f);
+		*this = Matrix4x4::Identity();
 	}
+	
 	~Matrix4x4(){}
 
-	Matrix4x4(Matrix4x4 &other)
-	{
-		for(int i = 0; i < 4; i++)
-			m[i] = other.m[i];
-	}
 	Matrix4x4(const Matrix4x4 &other)
 	{
 		for(int i = 0; i < 4; i++)
 			m[i] = other.m[i];
 	}
-	const Matrix4x4 &operator=(Matrix4x4 &other)
-	{
-		for(int i = 0; i < 4; i++)
-			m[i] = other.m[i];
-		return *this;
-	}
+
 	const Matrix4x4 &operator=(const Matrix4x4 &other)
 	{
 		for(int i = 0; i < 4; i++)
@@ -42,20 +32,23 @@ public:
 	
 	Matrix4x4(const Vector3 &forward, const Vector3 &up, const Vector3 &right, const Vector3 &translate)
 	{
-		m[0][0] = forward.x();
-		m[0][1] = forward.y();
-		m[0][2] = forward.z();
-		m[0][3] = 0.0f;
+		m[0] = float4(forward.xyz);
+		// m[0][0] = forward.x();
+		// m[0][1] = forward.y();
+		// m[0][2] = forward.z();
+		// m[0][3] = 0.0f;
 
-		m[1][0] = up.x();
-		m[1][1] = up.y();
-		m[1][2] = up.z();
-		m[1][3] = 0.0f;
+		m[1] = float4(up.xyz);
+		// m[1][0] = up.x();
+		// m[1][1] = up.y();
+		// m[1][2] = up.z();
+		// m[1][3] = 0.0f;
 
-		m[2][0] = right.x();
-		m[2][1] = right.y();
-		m[2][2] = right.z();
-		m[2][3] = 0.0f;
+		m[2] = float4(right.xyz);
+		// m[2][0] = right.x();
+		// m[2][1] = right.y();
+		// m[2][2] = right.z();
+		// m[2][3] = 0.0f;
 
 		m[0][3] = translate.x();
 		m[1][3] = translate.y();
@@ -77,6 +70,12 @@ public:
 	{
 		for (int i = 0; i < 4; i++)
 			m[i] = float4(elements[0 + i * 4], elements[1 + i * 4], elements[2 + i * 4], elements[3 + i * 4]);
+	}
+	
+	Matrix4x4(float4* elements)
+	{
+		for (int i = 0; i < 4; i++)
+			m[i] = elements[i];
 	}
 
 	static const Matrix4x4 LookAt(const Vector3& camera, const Vector3& object, const Vector3& up)

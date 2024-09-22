@@ -41,8 +41,8 @@ int main()
 	// e.push_back(q.fill(c, Matrix4x4(1.0f), N));
 	
 	// e.push_back(q.fill(c, Vector3(0, 0, 0), N));
-	int jobs = q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
-	// int jobs = 12;
+	// int jobs = q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
+	int jobs = 12;
 	// q.wait();
 	Matrix4x4 test(av, bv, cv, dv);
 	q.submit([&](handler &h){
