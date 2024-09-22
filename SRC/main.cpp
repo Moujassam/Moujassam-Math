@@ -8,10 +8,18 @@
 
 using namespace sycl;
 
-int main()
+int main(int arg_num, char **args)
 {
-
-	queue q(gpu_selector_v);
+	queue q;
+	if(arg_num > 1)
+	{
+		if(std::string(args[1]) == "cpu")
+			q = queue(cpu_selector_v);
+		else if(std::string(args[1]) == "gpu")
+			q = queue(gpu_selector_v);
+		else 
+			q = queue(default_selector_v);
+	}
 	// std::cout << q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() << "\n";
 	// std::cout << q.get_device().get_info<ext::intel::info::device::gpu_eu_simd_width>() << "\n";
 	// std::cout << q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>() << "\n";
@@ -41,8 +49,14 @@ int main()
 	// e.push_back(q.fill(c, Matrix4x4(1.0f), N));
 	
 	// e.push_back(q.fill(c, Vector3(0, 0, 0), N));
-	// int jobs = q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
-	int jobs = 12;
+	int jobs = 0;
+	if(q.get_device().is_gpu())
+		jobs = q.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * q.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
+	else if(q.get_device().is_cpu())
+		jobs = q.get_device().get_info<info::device::max_compute_units>();
+	else
+		jobs = 4096;
+	std::cout << "jobs = " << jobs << "\n";
 	// q.wait();
 	Matrix4x4 test(av, bv, cv, dv);
 	q.submit([&](handler &h){

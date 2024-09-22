@@ -32,19 +32,19 @@ public:
 	
 	Matrix4x4(const Vector3 &forward, const Vector3 &up, const Vector3 &right, const Vector3 &translate)
 	{
-		m[0] = float4(forward.xyz);
+		m[0] = float4(forward.xyz, 0.0f);
 		// m[0][0] = forward.x();
 		// m[0][1] = forward.y();
 		// m[0][2] = forward.z();
 		// m[0][3] = 0.0f;
 
-		m[1] = float4(up.xyz);
+		m[1] = float4(up.xyz, 0.0f);
 		// m[1][0] = up.x();
 		// m[1][1] = up.y();
 		// m[1][2] = up.z();
 		// m[1][3] = 0.0f;
 
-		m[2] = float4(right.xyz);
+		m[2] = float4(right.xyz, 0.0f);
 		// m[2][0] = right.x();
 		// m[2][1] = right.y();
 		// m[2][2] = right.z();
