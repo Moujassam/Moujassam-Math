@@ -17,8 +17,8 @@ public:
 	}
     Vector2(float X, float Y)
     {
-        xy.x() = X;
-        xy.y() = Y;
+        xy[0] = X;
+        xy[1] = Y;
     }
     const float Length() const
     {
@@ -156,10 +156,10 @@ public:
 	}
     Vector4(float X, float Y, float Z, float W)
     {
-        xyzw.x() = X;
-        xyzw.y() = Y;
-        xyzw.z() = Z;
-        xyzw.w() = W;
+        xyzw[0] = X;
+        xyzw[1] = Y;
+        xyzw[2] = Z;
+        xyzw[3] = W;
     }
     const float Length() const
     {
