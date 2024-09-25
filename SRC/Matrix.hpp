@@ -32,19 +32,19 @@ public:
 	
 	Matrix4x4(const Vector3 &forward, const Vector3 &up, const Vector3 &right, const Vector3 &translate)
 	{
-		m[0] = float4(forward.xyz, 0.0f);
+		m[0] = half4(forward.xyz, 0.0f);
 		// m[0][0] = forward.x();
 		// m[0][1] = forward.y();
 		// m[0][2] = forward.z();
 		// m[0][3] = 0.0f;
 
-		m[1] = float4(up.xyz, 0.0f);
+		m[1] = half4(up.xyz, 0.0f);
 		// m[1][0] = up.x();
 		// m[1][1] = up.y();
 		// m[1][2] = up.z();
 		// m[1][3] = 0.0f;
 
-		m[2] = float4(right.xyz, 0.0f);
+		m[2] = half4(right.xyz, 0.0f);
 		// m[2][0] = right.x();
 		// m[2][1] = right.y();
 		// m[2][2] = right.z();
@@ -58,7 +58,7 @@ public:
 	Matrix4x4(float diagonal)
 	{
 		for (int i = 0; i < 4; i++)
-			m[i] = float4(0.0f);
+			m[i] = half4(0.0f);
 
 		m[0][0] = diagonal;
 		m[1][1] = diagonal;
@@ -69,10 +69,10 @@ public:
 	Matrix4x4(float* elements)
 	{
 		for (int i = 0; i < 4; i++)
-			m[i] = float4(elements[0 + i * 4], elements[1 + i * 4], elements[2 + i * 4], elements[3 + i * 4]);
+			m[i] = half4(elements[0 + i * 4], elements[1 + i * 4], elements[2 + i * 4], elements[3 + i * 4]);
 	}
 	
-	Matrix4x4(float4* elements)
+	Matrix4x4(half4* elements)
 	{
 		for (int i = 0; i < 4; i++)
 			m[i] = elements[i];
@@ -185,7 +185,7 @@ public:
 		{
 			for (int x = 0; x < 4; x++)
 			{
-				float4 oth2 = float4(other.m[0][y], other.m[1][y], other.m[2][y], other.m[3][y]);
+				half4 oth2 = half4(other.m[0][y], other.m[1][y], other.m[2][y], other.m[3][y]);
 				float sum = dot(left.m[x], oth2);
 				data.m[x][y] = sum;
 				
@@ -204,7 +204,7 @@ public:
 
 	const Vector3 TransformDirection(const Vector3 &v) const
 	{
-		float4 vec(v.xyz, 0);
+		half4 vec(v.xyz, 0);
 		return Vector3(dot(m[0], vec), dot(m[1], vec), dot(m[2], vec));
 		// return Vector3(
 		// 	m[0 + 0 * 4] * v.x() + m[0 + 1 * 4] * v.y() + m[0 + 2 * 4] * v.z(),
@@ -220,7 +220,7 @@ public:
 
 	const Vector3 Multiply(const Vector3& other) const
 	{
-		float4 vec(other.xyz, 1);
+		half4 vec(other.xyz, 1);
 		return Vector3(dot(m[0], vec), dot(m[1], vec), dot(m[2], vec));
 		// return Vector3(
 		// 	m[0 + 0 * 4] * other.x() + m[0 + 1 * 4] * other.y() + m[0 + 2 * 4] * other.z() + m[0 + 3 * 4],
@@ -294,7 +294,7 @@ public:
 		return TranslateInverse() * RotationInverse();
 	}
 	
-	float4 m[4];
+	half4 m[4];
 };
 
 template<>

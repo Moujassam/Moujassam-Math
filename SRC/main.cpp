@@ -4,7 +4,7 @@
 #include <chrono>
 #include <sycl/sycl.hpp>
 #include "Matrix.hpp"
-#define N 65535//10000000
+#define N 10000000
 
 using namespace sycl;
 
