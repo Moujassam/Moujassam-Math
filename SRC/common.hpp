@@ -5,6 +5,7 @@ class Vector3;
 
 class commonMath
 {
+	public:
 	static const float approach(const float &goal, const float &current, const float &dt)
 	{
 		const float diff = goal - current;

@@ -4,7 +4,7 @@
 #include <chrono>
 #include <sycl/sycl.hpp>
 #include "Matrix.hpp"
-#define N 65535*100//100000000
+#define N 100000
 #include <thread>
 using namespace sycl;
 
@@ -58,16 +58,14 @@ int main(int arg_num, char **args)
 	// Matrix4x4 *a = malloc_device<Matrix4x4>(N, q);
 	// Matrix4x4 *b = malloc_device<Matrix4x4>(N, q);
 	// Matrix4x4 *c = malloc_device<Matrix4x4>(N, q);
-	Vector3 *cgpu = malloc_device<Vector3>(N/2, qgpu);
-	Vector3 *ccpu = malloc_device<Vector3>(N-N/2, qcpu);
-
+	
 
 	Vector3 av(1, 1, 1);
 	Vector3 bv(2, 0, 2);
 	Vector3 cv(1, 1, 0);
 	Vector3 dv(4, 4, 4);
 	
-	std::vector<event> e;
+	// std::vector<event> e;
 	// e.push_back(q.fill(a, Matrix4x4(av, bv, cv, dv), N));
 	// e.push_back(q.fill(b, Matrix4x4(av, bv, cv, dv), N));
 	// e.push_back(q.fill(c, Matrix4x4(1.0f), N));
@@ -80,49 +78,71 @@ int main(int arg_num, char **args)
 	// 	jobs = q.get_device().get_info<info::device::max_compute_units>();
 	// else
 	// 	jobs = 4096;
-	int jobs_cpu = qcpu.get_device().get_info<info::device::max_compute_units>();
-	int jobs_gpu = qgpu.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * qgpu.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
+
+	const int jobs_cpu = qcpu.get_device().get_info<info::device::max_compute_units>();
+	const int jobs_gpu = qgpu.get_device().get_info<ext::intel::info::device::gpu_eu_count>() * qgpu.get_device().get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
+	const int cpu_width = qcpu.get_device().get_info<info::device::native_vector_width_float>();
+	const unsigned long cpu_pow = jobs_cpu * 4000;
+	const int gpu_width = qgpu.get_device().get_info<info::device::native_vector_width_float>();
+	const unsigned long gpu_pow = jobs_gpu * 1000;
+	std::cout << cpu_pow << "\n";
+	std::cout << gpu_pow << "\n";
+	std::cout << qgpu.get_device().get_info<info::device::max_clock_frequency>() <<"\n";
+	const unsigned long work_gpu = commonMath::remap(gpu_pow, 0, gpu_pow + cpu_pow, 0.0f, 1.0f) * N;
+
+	const unsigned long work_cpu = N-work_gpu;//commonMath::remap(cpu_pow, 0, gpu_pow + cpu_pow, 0.0f, 1.0f) * N;
 	
 	std::cout << "jobs_cpu = " << jobs_cpu << "\n";
 	std::cout << "jobs_gpu = " << jobs_gpu << "\n";
+	std::cout << "work_cpu = " << work_cpu << "\n";
+	std::cout << "work_gpu = " << work_gpu << "\n";
+
+	Vector3 *cgpu = malloc_device<Vector3>(work_gpu, qgpu);
+	Vector3 *ccpu = malloc_shared<Vector3>(work_cpu, qcpu);
+
 	qgpu.wait();
 	qcpu.wait();
 	
 	Matrix4x4 test(av, bv, cv, dv);
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	qgpu.submit([&](handler &h){
 		// h.depends_on(e);
 		h.parallel_for(jobs_gpu, [=](item<1> it){
-			for(unsigned long i = it[0]; i < N/2; i += it.get_range(0))
+			for(unsigned long i = it[0]; i < work_gpu; i += it.get_range(0))
 			{
 				cgpu[i] = test * Vector3(1.0f, 1.0f, 1.0f);
 			}
 		});
-	});
+	}).wait();
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[ms]" << std::endl;
+	
+	begin = std::chrono::steady_clock::now();
 	qcpu.submit([&](handler &h){
 		// h.depends_on(e);
 		h.parallel_for(jobs_cpu, [=](item<1> it){
-			for(unsigned long i = it[0]; i < N-N/2; i += it.get_range(0))
+			for(unsigned long i = it[0]; i < work_cpu; i += it.get_range(0))
 			{
 				ccpu[i] = test * Vector3(1.0f, 1.0f, 1.0f);
 			}
 		});
-	});
-	
-	std::thread th_gpu(thread_wait, qgpu);
-	std::thread th_cpu(thread_wait, qcpu);
-	
-
-	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	th_gpu.join();
-	th_cpu.join();
-	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
+	}).wait();
+	end = std::chrono::steady_clock::now();
 	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[ms]" << std::endl;
+	
+	// std::thread th_gpu(thread_wait, qgpu);
+	// std::thread th_cpu(thread_wait, qcpu);
+	
+
+	
+
+
+	
 
 	// Matrix4x4 *result = new Matrix4x4[N];
 	Vector3 *result = new Vector3[N];
-	qgpu.copy(cgpu, result, N/2);
-	qcpu.copy(ccpu, result + N/2, N-N/2);
+	qgpu.copy(cgpu, result, work_gpu);
+	qcpu.copy(ccpu, result + work_gpu, work_cpu);
 	qgpu.wait();
 	qcpu.wait();
 
