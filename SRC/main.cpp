@@ -29,8 +29,13 @@ int main(int arg_num, char **args)
 	
 	// queue q2(gpu_selector_v);
 	// std::cout << q2.get_device().get_info<info::device::max_compute_units>() << "\n";
-	// std::cout << q2.get_device().get_info<info::device::native_vector_width_double>() << "\n";
-	
+	std::cout << q.get_device().get_info<info::device::native_vector_width_char>() << "\n";
+	std::cout << q.get_device().get_info<info::device::native_vector_width_short>() << "\n";
+	std::cout << q.get_device().get_info<info::device::native_vector_width_int>() << "\n";
+	std::cout << q.get_device().get_info<info::device::native_vector_width_long>() << "\n";
+	std::cout << q.get_device().get_info<info::device::native_vector_width_half>() << "\n"; 
+	std::cout << q.get_device().get_info<info::device::native_vector_width_float>() << "\n"; 
+	std::cout << q.get_device().get_info<info::device::native_vector_width_double>() << "\n"; 
 	
 	
 	// Matrix4x4 *a = malloc_device<Matrix4x4>(N, q);

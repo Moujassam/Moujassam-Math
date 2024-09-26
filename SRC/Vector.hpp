@@ -66,15 +66,15 @@ class Vector3
     public:
 	Vector3()
 	{
-		xyz = half3(0, 0, 0);
+		xyz = float3(0, 0, 0);
 	}
-	Vector3(half3 xyz_init)
+	Vector3(float3 xyz_init)
 	{
 		xyz = xyz_init;
 	}
-	Vector3(half4 xyz_init)
+	Vector3(float4 xyz_init)
 	{ 
-		xyz = half3(xyz_init.swizzle<0, 1, 2>());
+		xyz = float3(xyz_init.swizzle<0, 1, 2>());
 	}
     Vector3(float X, float Y, float Z)
     {
@@ -129,15 +129,15 @@ class Vector3
     {
 		return v * (DotProduct(v) / v.LengthSqrt());
     }
-    const half &operator[](const int i) const
+    const float &operator[](const int i) const
     {
         return (xyz)[i];
     }
-	const half &x() const {return xyz.x();}
-	const half &y() const {return xyz.y();}
-	const half &z() const {return xyz.z();}
+	const float &x() const {return xyz.x();}
+	const float &y() const {return xyz.y();}
+	const float &z() const {return xyz.z();}
 
-    half3 xyz;
+    float3 xyz;
 };
 
 template<>
