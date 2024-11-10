@@ -11,14 +11,14 @@ class Quaternion
 public:
     Quaternion()
     {
-        w =0 ; v = Vector3(0, 0, 0);
+        w =0 ; v = vec3(0, 0, 0);
     }
-    Quaternion(const float &W, const Vector3& V)
+    Quaternion(const float &W, const vec3& V)
     {
         w = W;
         v = V;
     }
-    Quaternion(const Vector3& axis, const float &angle)
+    Quaternion(const vec3& axis, const float &angle)
     {
         // convert angle to radians
         float a = toRadians(angle);
@@ -36,8 +36,8 @@ public:
     {
         Quaternion r;
 
-	    r.w = w*q.w - v.DotProduct(q.v);
-	    r.v = v*q.w + q.v*w + v.Cross(q.v);
+	    r.w = w*q.w - v.dot(q.v);
+	    r.v = v*q.w + q.v*w + v.cross(q.v);
 
 	    return r;
     }
@@ -47,21 +47,21 @@ public:
         v = q.v;
         return *this;
     }
-    const Vector3 operator*(const Vector3 &v) const
+    const vec3 operator*(const vec3 &v) const
     {
         const Quaternion p(0, v);
         const Quaternion q = *this;
         return (q * p * q.Inverted()).v;   
     }
 
-    void ToAxisAngle(Vector3 &axis, float &angle) const
+    void ToAxisAngle(vec3 &axis, float &angle) const
     {
-	    if (v.LengthSqrt() < 0.0001f)
-		    axis = Vector3(1, 0, 0);
+	    if (v.lengthSqrt() < 0.0001f)
+		    axis = vec3(1, 0, 0);
 	    else
-		    axis = v.Normalize();
+		    axis = v.normalized();
 
-	    assert(fabs(axis.LengthSqrt() - 1) < 0.000001f);
+	    assert(fabs(axis.lengthSqrt() - 1) < 0.000001f);
         angle = acos(w)*2;
 
 	    angle = toDegrees(angle);
@@ -69,7 +69,7 @@ public:
 
     const Quaternion operator^(const float &t) const
     {
-        Vector3 axis;
+        vec3 axis;
         float angle;
         ToAxisAngle(axis, angle);
         return Quaternion(axis, angle * t);
@@ -82,5 +82,5 @@ public:
     }
 
     float w;
-    Vector3 v;
+    vec3 v;
 };

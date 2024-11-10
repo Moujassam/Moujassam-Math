@@ -1,7 +1,6 @@
 #pragma once
 #include "Vector.hpp"
 
-class Vector3;
 
 class commonMath
 {
@@ -20,12 +19,12 @@ class commonMath
 		return green;
 	}
 	// plane_normal need to be a normilaized vector
-	static const bool LinePlaneIntersection(const Vector3& plane_point, const Vector3& plane_normal, const Vector3& lineStart, const Vector3& lineEnd, Vector3& intersection, float &fraction)
+	static const bool LinePlaneIntersection(const vec3& plane_point, const vec3& plane_normal, const vec3& lineStart, const vec3& lineEnd, vec3& intersection, float &fraction)
 	{ 
-		Vector3 v = lineEnd - lineStart;
-		Vector3 w = plane_point - lineStart;
+		vec3 v = lineEnd - lineStart;
+		vec3 w = plane_point - lineStart;
 
-		const float k = w.DotProduct(plane_point)/v.DotProduct(plane_point);
+		const float k = w.dot(plane_point)/v.dot(plane_point);
 
 		intersection = lineStart + v * k;
 
@@ -34,10 +33,10 @@ class commonMath
 		return k >= 0.0f && k <= 1.0f;
 	}
 
-	static const Vector3 NearestPointOnSphere(const Vector3 &origin, const float &r, const Vector3 &point)
+	static const vec3 NearestPointOnSphere(const vec3 &origin, const float &r, const vec3 &point)
 	{
-		Vector3 AM = point - origin;
-		AM = AM.Normalize();
+		vec3 AM = point - origin;
+		AM = AM.normalized();
 		return origin + AM * r;
 	}
 };

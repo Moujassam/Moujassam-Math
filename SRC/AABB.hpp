@@ -1,27 +1,26 @@
 #pragma once
 
 #include "Vector.hpp"
-#include <sycl/sycl.hpp>
 
 class AABB
 {
 public:
 	AABB()
 	{
-		min = Vector3();
-		max = Vector3();
+		min = vec3();
+		max = vec3();
 	}
-	AABB(const Vector3& Min, const Vector3& Max)
+	AABB(const vec3& Min, const vec3& Max)
 	{
 		min = Min;
 		max = Max;
 	}
-	const AABB operator+(const Vector3& v) const
+	const AABB operator+(const vec3& v) const
 	{
 		return AABB(min + v, max + v);
 	}
 
-	const bool LineAABBIntersection(const Vector3& start, const Vector3& end, Vector3& intersectionPoint, float &fraction) const
+	const bool LineAABBIntersection(const vec3& start, const vec3& end, vec3& intersectionPoint, float &fraction) const
 	{
 		float f_low = 0.0f;
 		float f_high = 1.0f;
@@ -29,30 +28,30 @@ public:
 		if (ClipLine(*this, start, end, f_low, f_high) == false)
 			return false;
 
-		Vector3 b = end - start;
+		vec3 b = end - start;
 		intersectionPoint = start + b * f_low;
 
 		fraction = f_low;
 		return true;
 	}
-	const bool ClipLine(const AABB& aabb, const Vector3& start, const Vector3& end, float& f_low, float& f_high) const
+	const bool ClipLine(const AABB& aabb, const vec3& start, const vec3& end, float& f_low, float& f_high) const
 	{
-		float3 f_dim_low = (aabb.min.xyz - start.xyz) / (end.xyz - start.xyz);
-		float3 f_dim_high = (aabb.max.xyz - start.xyz) / (end.xyz - start.xyz);
+		vec3 f_dim_low = (aabb.min - start) / (end - start);
+		vec3 f_dim_high = (aabb.max - start) / (end - start);
 		
-		int3 comp = f_dim_high < f_dim_low;
+		bvec3 comp = f_dim_high < f_dim_low;
 		for(int i = 0; i < 3; i++)
-			if (comp[i])
+			if (comp[i]) 
 			{
 				float temp = f_dim_high[i];
 				f_dim_high[i] = f_dim_low[i];
 				f_dim_low[i] = temp;
 			}
-		int3 first1 = f_dim_high < f_low;
-		int3 second1 = f_dim_low > f_high;
+		bvec3 first1 = f_dim_high < f_low;
+		bvec3 second1 = f_dim_low > f_high;
 		
-		int3 first2 = f_dim_low > f_low;
-		int3 second2 = f_dim_high < f_high;
+		bvec3 first2 = f_dim_low > f_low;
+		bvec3 second2 = f_dim_high < f_high;
 		for(int i = 0; i < 3; i++)
 		{
 			if (first1[i] || second1[i])
@@ -70,8 +69,8 @@ public:
 
 	const bool AABBIntersection(const AABB &other) const
 	{
-		int3 first = min.xyz > other.max.xyz;
-		int3 second = max.xyz < other.min.xyz;
+		bvec3 first = min > other.max;
+		bvec3 second = max < other.min;
 		for(char i = 0; i < 3; i++)
 		{
 			if(first[i])
@@ -82,6 +81,6 @@ public:
 		return true;
 	}
 
-	Vector3 min;
-	Vector3 max;
+	vec3 min;
+	vec3 max;
 };

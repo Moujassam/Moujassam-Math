@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cstring>
 #include "Vector.hpp"
-#include <sycl/sycl.hpp>
 
 #define toRadians(x) x * 0.01745329251f
 
@@ -30,35 +28,35 @@ public:
 		return *this;
 	}
 	
-	Matrix4x4(const Vector3 &forward, const Vector3 &up, const Vector3 &right, const Vector3 &translate)
+	Matrix4x4(const vec3 &forward, const vec3 &up, const vec3 &right, const vec3 &translate)
 	{
-		m[0] = float4(forward.xyz, 0.0f);
+		m[0] = vec4(forward, 0.0f);
 		// m[0][0] = forward.x();
 		// m[0][1] = forward.y();
 		// m[0][2] = forward.z();
 		// m[0][3] = 0.0f;
 
-		m[1] = float4(up.xyz, 0.0f);
+		m[1] = vec4(up, 0.0f);
 		// m[1][0] = up.x();
 		// m[1][1] = up.y();
 		// m[1][2] = up.z();
 		// m[1][3] = 0.0f;
 
-		m[2] = float4(right.xyz, 0.0f);
+		m[2] = vec4(right, 0.0f);
 		// m[2][0] = right.x();
 		// m[2][1] = right.y();
 		// m[2][2] = right.z();
 		// m[2][3] = 0.0f;
 
-		m[0][3] = translate.x();
-		m[1][3] = translate.y();
-		m[2][3] = translate.z();
+		m[0][3] = translate[0];
+		m[1][3] = translate[1];
+		m[2][3] = translate[2];
 		m[3][3] = 1.0f;
 	}
 	Matrix4x4(float diagonal)
 	{
 		for (int i = 0; i < 4; i++)
-			m[i] = float4(0.0f);
+			m[i] = vec4(0.0f);
 
 		m[0][0] = diagonal;
 		m[1][1] = diagonal;
@@ -69,20 +67,20 @@ public:
 	Matrix4x4(float* elements)
 	{
 		for (int i = 0; i < 4; i++)
-			m[i] = float4(elements[0 + i * 4], elements[1 + i * 4], elements[2 + i * 4], elements[3 + i * 4]);
+			m[i] = vec4(elements[0 + i * 4], elements[1 + i * 4], elements[2 + i * 4], elements[3 + i * 4]);
 	}
 	
-	Matrix4x4(float4* elements)
+	Matrix4x4(vec4* elements)
 	{
 		for (int i = 0; i < 4; i++)
 			m[i] = elements[i];
 	}
 
-	static const Matrix4x4 LookAt(const Vector3& camera, const Vector3& object, const Vector3& up)
+	static const Matrix4x4 LookAt(const vec3& camera, const vec3& object, const vec3& up)
 	{
-		Vector3 forward = (object - camera).Normalize();
-		Vector3 right = up.Cross(forward).Normalize();
-		Vector3 newUp = forward.Cross(right);
+		vec3 forward = (object - camera).normalized();
+		vec3 right = up.cross(forward).normalized();
+		vec3 newUp = forward.cross(right);
 
 		return Matrix4x4(forward, newUp, right, camera);
 	}
@@ -121,7 +119,7 @@ public:
 		return result;
 	}
 
-	static const Matrix4x4 Translation(const Vector3& translation)
+	static const Matrix4x4 Translation(const vec3& translation)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -132,7 +130,7 @@ public:
 		return result;
 	}
 
-	static const Matrix4x4 Rotation(const float angle, const Vector3& axis)
+	static const Matrix4x4 Rotation(const float angle, const vec3& axis)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -160,7 +158,7 @@ public:
 		return result;
 	}
 
-	static const Matrix4x4 Scale(const Vector3& scale)
+	static const Matrix4x4 Scale(const vec3& scale)
 	{
 		Matrix4x4 result(1.0f);
 
@@ -185,8 +183,8 @@ public:
 		{
 			for (int x = 0; x < 4; x++)
 			{
-				float4 oth2 = float4(other.m[0][y], other.m[1][y], other.m[2][y], other.m[3][y]);
-				float sum = dot(left.m[x], oth2);
+				vec4 oth2 = vec4(other.m[0][y], other.m[1][y], other.m[2][y], other.m[3][y]);
+				float sum = (left.m[x].dot(oth2));
 				data.m[x][y] = sum;
 				
 				// float sum = 0.0f;
@@ -202,11 +200,11 @@ public:
 		return data;
 	}
 
-	const Vector3 TransformDirection(const Vector3 &v) const
+	const vec3 TransformDirection(const vec3 &v) const
 	{
-		float4 vec(v.xyz, 0);
-		return Vector3(dot(m[0], vec), dot(m[1], vec), dot(m[2], vec));
-		// return Vector3(
+		vec4 vec(v, 0);
+		return vec3(m[0].dot( vec), m[1].dot(vec), m[2].dot(vec));
+		// return vec3(
 		// 	m[0 + 0 * 4] * v.x() + m[0 + 1 * 4] * v.y() + m[0 + 2 * 4] * v.z(),
 		// 	m[1 + 0 * 4] * v.x() + m[1 + 1 * 4] * v.y() + m[1 + 2 * 4] * v.z(),
 		// 	m[2 + 0 * 4] * v.x() + m[2 + 1 * 4] * v.y() + m[2 + 2 * 4] * v.z()
@@ -218,18 +216,18 @@ public:
 		return (*this)*(other);
 	}
 
-	const Vector3 Multiply(const Vector3& other) const
+	const vec3 Multiply(const vec3& other) const
 	{
-		float4 vec(other.xyz, 1);
-		return Vector3(dot(m[0], vec), dot(m[1], vec), dot(m[2], vec));
-		// return Vector3(
+		vec4 vec(other, 1);
+		return vec3(m[0].dot( vec), m[1].dot(vec), m[2].dot(vec));
+		// return vec3(
 		// 	m[0 + 0 * 4] * other.x() + m[0 + 1 * 4] * other.y() + m[0 + 2 * 4] * other.z() + m[0 + 3 * 4],
 		// 	m[1 + 0 * 4] * other.x() + m[1 + 1 * 4] * other.y() + m[1 + 2 * 4] * other.z() + m[1 + 3 * 4],
 		// 	m[2 + 0 * 4] * other.x() + m[2 + 1 * 4] * other.y() + m[2 + 2 * 4] * other.z() + m[2 + 3 * 4]
 		// );
 	}
 
-	friend const Vector3 operator*(const Matrix4x4& left, const Vector3& right)
+	friend const vec3 operator*(const Matrix4x4& left, const vec3& right)
 	{
 		return left.Multiply(right);
 	}
@@ -294,8 +292,5 @@ public:
 		return TranslateInverse() * RotationInverse();
 	}
 	
-	float4 m[4];
+	vec4 m[4];
 };
-
-template<>
-struct sycl::is_device_copyable<Matrix4x4> : std::true_type {};

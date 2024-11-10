@@ -6,12 +6,12 @@
 class AxixAngle
 {
 	//axis need to be a normalized vector
-	const Vector3 RotateVectorAroundAxisAngle(const Vector3& v, const Vector3& axis, const float &angle)
+	const vec3 RotateVectorAroundAxisAngle(const vec3& v, const vec3& axis, const float &angle)
 	{
 		float a = toRadians(angle);
 		float sinAngle = sin(a);
 		float cosAngle = cos(a);
 
-		return v * cosAngle + axis.Cross(v) * sinAngle + axis * v.DotProduct(axis) * (1 - cosAngle);
+		return v * cosAngle + axis.cross(v) * sinAngle + axis * v.dot(axis) * (1 - cosAngle);
 	}
 };

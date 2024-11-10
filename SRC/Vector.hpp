@@ -1,203 +1,274 @@
 #pragma once
-#include <math.h>
-#include <sycl/sycl.hpp>
+#include <array>
+#include <cmath> 
 
-using namespace sycl;
-
-class Vector2
-{
+template <typename T, std::size_t N>
+class Vector {
+private:
+    std::array<T, N> data;
 public:
-	Vector2()
-	{
-		xy = float2(0, 0);
-	}
-	Vector2(float2 xy_init)
-	{
-		xy = xy_init;
-	}
-    Vector2(float X, float Y)
-    {
-        xy[0] = X;
-        xy[1] = Y;
+    Vector() = default;
+    Vector(const std::array<T, N>& data) : data(data) {}
+    Vector(std::array<T, N>&& data) : data(std::move(data)) {}
+    Vector(const Vector<T, N>& other) : data(other.data) {}
+    Vector(Vector<T, N>&& other) : data(std::move(other.data)) {}
+    Vector(std::initializer_list<T> list) {
+        std::size_t i = 0;
+        for (const T& value : list) {
+            data[i++] = value;
+        }
     }
-    const float Length() const
-    {
-        return sqrt(dot(xy, xy));//x*x + y*y);
+    Vector(Vector<T, N - 1> other, T value) {
+        for (std::size_t i = 0; i < N - 1; ++i) {
+            data[i] = other[i];
+        }
+        data[N - 1] = value;
     }
-    const float LengthSqrt() const
-    {
-        return dot(xy, xy);//x*x + y*y;
+    Vector(T value, Vector<T, N - 1> other) {
+        data[0] = value;
+        for (std::size_t i = 0; i < N - 1; ++i) {
+            data[i + 1] = other[i];
+        }
     }
-    const Vector2 operator+(const Vector2 &s) const
+
+    Vector(Vector<T, N-1> other)
     {
-        return Vector2(xy + s.xy);//x+s.x, y+s.y);
+        for (int i = 0; i < N - 1; i++)
+            data[i] = other[i];
+        data[N - 1] = 0;
     }
-    const Vector2 operator-(const Vector2 &s) const
+    Vector(T value) {
+        for (std::size_t i = 0; i < N; ++i) {
+            data[i] = value;
+        }
+    }
+    Vector(T x, T y) {
+        static_assert(N == 2, "Vector must have 2 components");
+        data[0] = x;
+        data[1] = y;
+    }   
+    Vector(T x, T y, T z) {
+        static_assert(N == 3, "Vector must have 3 components");
+        data[0] = x;
+        data[1] = y;
+        data[2] = z;
+    }
+    Vector(T x, T y, T z, T w) {
+        static_assert(N == 4, "Vector must have 4 components");
+        data[0] = x;
+        data[1] = y;
+        data[2] = z;
+        data[3] = w;
+    }
+    Vector<T, N>& operator=(const Vector<T, N>& other) {
+        data = other.data;
+        return *this;
+    }
+    Vector<T, N>& operator=(Vector<T, N>&& other) {
+        data = std::move(other.data);
+        return *this;
+    }
+    T& operator[](std::size_t i) {
+        return data[i];
+    }
+    const T& operator[](std::size_t i) const {
+        return data[i];
+    }
+    Vector<T, N> operator+(const Vector<T, N>& other) const {
+        Vector<T, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] + other[i];
+        }
+        return result;
+    }
+    Vector<T, N> operator-(const Vector<T, N>& other) const {
+        Vector<T, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] - other[i];
+        }
+        return result;
+    }
+    Vector<T, N> operator*(T scalar) const {
+        Vector<T, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] * scalar;
+        }
+        return result;
+    }
+    Vector<T, N> operator/(T scalar) const {
+        Vector<T, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] / scalar;
+        }
+        return result;
+    }
+    Vector operator/(const Vector& other) const {
+        Vector<T, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] / other[i];
+        }
+        return result;
+    }
+    Vector<T, N>& operator+=(const Vector<T, N>& other) {
+        for (std::size_t i = 0; i < N; ++i) {
+            data[i] += other[i];
+        }
+        return *this;
+    }
+    Vector<T, N>& operator-=(const Vector<T, N>& other) {
+        for (std::size_t i = 0; i < N; ++i) {
+            data[i] -= other[i];
+        }
+        return *this;
+    }
+    Vector<T, N>& operator*=(T scalar) {
+        for (std::size_t i = 0; i < N; ++i) {
+            data[i] *= scalar;
+        }
+        return *this;
+    }
+    Vector<T, N>& operator/=(T scalar) {
+        for (std::size_t i = 0; i < N; ++i) {
+            data[i] /= scalar;
+        }
+        return *this;
+    }
+    Vector<T, N> operator-() const {
+        Vector<T, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = -data[i];
+        }
+        return result;
+    }
+    T dot(const Vector<T, N>& other) const {
+        T result = 0;
+        for (std::size_t i = 0; i < N; ++i) {
+            result += data[i] * other[i];
+        }
+        return result;
+    }
+    T lengthSqrt() const {
+        return dot(*this);
+    }
+    T length() const {
+        return std::sqrt(lengthSqrt());
+    }
+    Vector<T, N> normalized() const {
+        return *this / length();
+    }
+
+    Vector<T, N> cross(const Vector<T, N>& other) const {
+        static_assert(N == 3, "cross product is only defined for 3D vectors");
+        return {
+            data[1] * other[2] - data[2] * other[1],
+            data[2] * other[0] - data[0] * other[2],
+            data[0] * other[1] - data[1] * other[0]
+        };
+    }
+    Vector<T, N> reflect(const Vector<T, N>& normal) const {
+        return *this - 2 * dot(normal) * normal;
+    }
+    Vector<T, N> refract(const Vector<T, N>& normal, T eta) const {
+        T k = 1 - eta * eta * (1 - dot(normal) * dot(normal));
+        if (k < 0) {
+            return {};
+        }
+        return eta * *this - (eta * dot(normal) + std::sqrt(k)) * normal;
+    }
+    T x() const {
+        static_assert(N >= 1, "Vector must have at least 1 component");
+        return data[0];
+    }
+    T y() const {
+        static_assert(N >= 2, "Vector must have at least 2 components");
+        return data[1];
+    }
+    T z() const {
+        static_assert(N >= 3, "Vector must have at least 3 components");
+        return data[2];
+    }
+    T w() const {
+        static_assert(N >= 4, "Vector must have at least 4 components");
+        return data[3];
+    }
+    std::size_t size() const {
+        return N;
+    }
+    const T* ptr() const {
+        return data.data();
+    }
+    T* ptr() {
+        return data.data();
+    }
+    T &operator[](int i)
     {
-        return Vector2(xy - s.xy);//x-s.x, y-s.y);
+        return data[i];
     }
-    const Vector2 operator*(const float &s) const
+    const T &operator[](int i) const
     {
-        return Vector2(xy * s);//x*s, y*s);
+        return data[i];
     }
-    const Vector2 operator/(const float &s) const
-    {
-        return Vector2(xy / s);//x/s, y/s);
+    Vector<bool, N> operator<(const Vector<T, N>& other) const {
+        Vector<bool, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] < other[i];
+        }
+        return result;
     }
-    const Vector2 Normalize() const
-    {
-        return *this / Length();
+    Vector<bool, N> operator>(const Vector<T, N>& other) const {
+        Vector<bool, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] > other[i];
+        }
+        return result;
     }
-    const float DotProduct(const Vector2& b) const
-    {
-		return dot(xy, b.xy);
-        // return x * b.x + y * b.y;
+
+    Vector<bool, N> operator<=(const Vector<T, N>& other) const {
+        Vector<bool, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] <= other[i];
+        }
+        return result;
     }
-    const float operator[](int i) const
-    {
-        return (xy)[i];
+
+    Vector<bool, N> operator>=(const Vector<T, N>& other) const {
+        Vector<bool, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] >= other[i];
+        }
+        return result;
     }
-    
-    float2 xy;
+
+    Vector<bool, N> operator==(const Vector<T, N>& other) const {
+        Vector<bool, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] == other[i];
+        }
+        return result;
+    }
+
+    Vector<bool, N> operator!=(const Vector<T, N>& other) const {
+        Vector<bool, N> result;
+        for (std::size_t i = 0; i < N; ++i) {
+            result[i] = data[i] != other[i];
+        }
+        return result;
+    }
 };
 
-class Vector3
-{
-    public:
-	Vector3()
-	{
-		xyz = float3(0, 0, 0);
-	}
-	Vector3(float3 xyz_init)
-	{
-		xyz = xyz_init;
-	}
-	Vector3(float4 xyz_init)
-	{ 
-		xyz = float3(xyz_init.swizzle<0, 1, 2>());
-	}
-    Vector3(float X, float Y, float Z)
-    {
-        xyz[0] = X;
-        xyz[1] = Y;
-        xyz[2] = Z;
-    }
-    const float Length() const
-    {
-        return sqrt(dot(xyz, xyz));//x*x + y*y + z*z);
-    }
-    const float LengthSqrt() const
-    {
-        return dot(xyz, xyz);//x*x + y*y + z*z;
-    }
-    const Vector3 operator+(const Vector3 &s) const
-    {
-        return Vector3(xyz + s.xyz);//x + s.x, y + s.y, z + s.z);
-    }
-    const Vector3 operator-(const Vector3 &s) const
-    {
-        return Vector3(xyz - s.xyz);//x - s.x, y - s.y, z - s.z);
-    }
-    const Vector3 operator-() const
-    {
-        return Vector3(-xyz);//-x, -y, -z);
-    }
-    const Vector3 operator*(const float &s) const
-    {
-        return Vector3(xyz * s);//x * s, y * s, z * s);
-    }
-    const Vector3 operator/(const float &s) const
-    {
-        return Vector3(xyz / s);//x/s, y/s, z/s);
-    }
-    const Vector3 Normalize() const
-    {
-        return *this / Length();
-    }
-    const float DotProduct(const Vector3& b) const
-    {
-        return dot(xyz, b.xyz);//x * b.x + y * b.y + z * b.z;
-    }
-	const Vector3 Cross(const Vector3& v) const
-	{
-		return cross(xyz, v.xyz);
-		// return Vector3(y * v.z - z * v.y,
-        //                 z * v.x - x * v.z,
-        //                 x * v.y - y * v.x);
-	}
-    const Vector3 Project(const Vector3& v) const
-    {
-		return v * (DotProduct(v) / v.LengthSqrt());
-    }
-    const float &operator[](const int i) const
-    {
-        return (xyz)[i];
-    }
-	const float &x() const {return xyz.x();}
-	const float &y() const {return xyz.y();}
-	const float &z() const {return xyz.z();}
+using vec2 = Vector<float, 2>;
+using vec3 = Vector<float, 3>;
+using vec4 = Vector<float, 4>;
+using dvec2 = Vector<double, 2>;
+using dvec3 = Vector<double, 3>;
+using dvec4 = Vector<double, 4>;
+using ivec2 = Vector<int, 2>;
+using ivec3 = Vector<int, 3>;
+using ivec4 = Vector<int, 4>;
+using uvec2 = Vector<unsigned int, 2>;
+using uvec3 = Vector<unsigned int, 3>;
+using uvec4 = Vector<unsigned int, 4>;
+using bvec2 = Vector<bool, 2>;
+using bvec3 = Vector<bool, 3>;
+using bvec4 = Vector<bool, 4>;
 
-    float3 xyz;
-};
-
-template<>
-struct sycl::is_device_copyable<Vector3> : std::true_type {};
-
-class Vector4
-{
-public:
-    Vector4()
-    {
-		xyzw = float4(0, 0, 0, 0);
-    }
-	Vector4(float4 xyzw_init)
-	{
-		xyzw = xyzw_init;
-	}
-    Vector4(float X, float Y, float Z, float W)
-    {
-        xyzw[0] = X;
-        xyzw[1] = Y;
-        xyzw[2] = Z;
-        xyzw[3] = W;
-    }
-    const float Length() const
-    {
-        return sqrt(dot(xyzw, xyzw));//x*x + y*y + z*z + w*w);
-    }
-    const float LengthSqrt() const
-    {
-        return dot(xyzw, xyzw);//x*x + y*y + z*z + w*w;
-    }
-    const Vector4 operator+(const Vector4 &s) const
-    {
-        return Vector4(xyzw + s.xyzw);//x + s.x, y + s.y, z + s.z, w + s.w);
-    }
-    const Vector4 operator-(const Vector4 &s) const
-    {
-        return Vector4(xyzw - s.xyzw);//x - s.x, y - s.y, z - s.z, w - s.w);
-    }
-    const Vector4 operator*(const float &s) const
-    {
-        return Vector4(xyzw * s);//x * s, y * s, z * s, w * s);
-    }
-    const Vector4 operator/(const float &s) const
-    {
-        return Vector4(xyzw / s);//x/s, y/s, z/s, w/s);
-    }
-    const Vector4 Normalize() const
-    {
-        return *this / Length();
-    }
-
-    const float DotProduct(const Vector4& b) const
-    {
-        return dot(xyzw, b.xyzw);
-		// return x * b.x + y * b.y + z * b.z + w * b.w;
-    }
-    const float operator[](int i) const
-    {
-        return (xyzw)[i];
-    }
-    float4 xyzw;
-};

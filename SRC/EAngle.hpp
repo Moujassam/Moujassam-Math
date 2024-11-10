@@ -17,14 +17,14 @@ class EAngle
         r = roll;
     }
 
-    const Vector3 ToVector3() const
+    const vec3 Tovec3() const
     {
-        return Vector3(std::cos(y) * std::cos(p),
+        return vec3(std::cos(y) * std::cos(p),
             std::sin(p),
             std::sin(y) * std::cos(p));
     }
 
-    void Normalize()
+    void normalized()
     {
         if(p > 89)
             p = 89;
